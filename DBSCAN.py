@@ -33,8 +33,8 @@ def evaluate(labels, labels_true, X):
 
     unique_labels = np.unique(labels)
 
-    for ul in unique_labels:
-        plt.plot(X[labels==ul,0],X[labels==ul,1],'.')
+    # for ul in unique_labels:
+    #     plt.plot(X[labels==ul,0],X[labels==ul,1],'.')
 
 def numpyToPoints(X):
     Points = []
