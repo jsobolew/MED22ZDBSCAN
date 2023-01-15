@@ -9,8 +9,7 @@ from sklearn import metrics
 
 @dataclass
 class Point:
-    x: int
-    y : int
+    location: np.array
     label: int
 
 def evaluate(labels, labels_true, X):
@@ -39,7 +38,7 @@ def evaluate(labels, labels_true, X):
 def numpyToPoints(X):
     Points = []
     for i in range(len(X)):
-        Points.append(Point(X[i,0], X[i,1], 0))
+        Points.append(Point(X[i], 0))
     return Points
 
 class DBSCAN:
@@ -57,7 +56,7 @@ class DBSCAN:
         return inRange
 
     def euclideanDist(self, p1:Point, p2:Point):
-        return np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
+        return np.sqrt(np.sum(np.power(p1.location-p2.location,2)))#np.sqrt((p1.x - p2.x)**2 + (p1.y - p2.y)**2)
 
     def fit(self, Points):
         C = 0
@@ -81,3 +80,29 @@ class DBSCAN:
                     neighbors.extend(newNeighbors)
         for _, p in enumerate(Points):
             self.labels.append(p.label)
+
+def HDBSCAN(X, threshold):
+    xydists = np.array([np.array([x for _ in range(len(X))]) - X for x in X])
+    dists = np.sqrt(xydists[:,:,0]**2 + xydists[:,:,1]**2)
+    Npoints = dists.size
+    max_dist = np.max(dists)
+    dists[np.triu_indices(Npoints)] = max_dist
+
+    mindist = [0]
+    mindistPts = []
+
+    plt.plot(X[:,0],X[:,1],'o')
+
+    i = 0
+    while mindist[-1] < threshold and i<Npoints:
+        minidx = np.argmin(dists)
+        row = minidx // 20
+        col = minidx % 20
+        mindist.append(dists[row,col])
+        mindistPts.append([row, col])
+        dists[row,col] = max_dist
+        plt.plot(X[row,0],X[row,1],'or')
+        plt.plot(X[col,0],X[col,1],'or')
+        plt.plot([X[row,0],X[col,0]],[X[row,1],X[col,1]], 'b')
+        i += 1
+    plt.show()
