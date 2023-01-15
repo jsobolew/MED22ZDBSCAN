@@ -12,7 +12,7 @@ class Point:
     location: np.array
     label: int
 
-def evaluate(labels, labels_true, X):
+def evaluate(labels, labels_true, X, visualize):
     # Number of clusters in labels, ignoring noise if present.
     n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
     n_noise_ = list(labels).count(-1)
@@ -29,11 +29,10 @@ def evaluate(labels, labels_true, X):
     )
     print("Silhouette Coefficient: %0.3f" % metrics.silhouette_score(X, labels))
 
-
-    unique_labels = np.unique(labels)
-
-    # for ul in unique_labels:
-    #     plt.plot(X[labels==ul,0],X[labels==ul,1],'.')
+    if visualize:
+        unique_labels = np.unique(labels)
+        for ul in unique_labels:
+            plt.plot(X[labels==ul,0],X[labels==ul,1],'.')
 
 def numpyToPoints(X):
     Points = []
@@ -84,7 +83,7 @@ class DBSCAN:
 def HDBSCAN(X, threshold):
     xydists = np.array([np.array([x for _ in range(len(X))]) - X for x in X])
     dists = np.sqrt(xydists[:,:,0]**2 + xydists[:,:,1]**2)
-    Npoints = dists.size
+    Npoints = len(dists)
     max_dist = np.max(dists)
     dists[np.triu_indices(Npoints)] = max_dist
 
@@ -94,10 +93,10 @@ def HDBSCAN(X, threshold):
     plt.plot(X[:,0],X[:,1],'o')
 
     i = 0
-    while mindist[-1] < threshold and i<Npoints:
+    while mindist[-1] < threshold and i<dists.size:
         minidx = np.argmin(dists)
-        row = minidx // 20
-        col = minidx % 20
+        row = minidx // Npoints
+        col = minidx % Npoints
         mindist.append(dists[row,col])
         mindistPts.append([row, col])
         dists[row,col] = max_dist
